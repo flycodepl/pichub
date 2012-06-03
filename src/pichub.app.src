@@ -1,0 +1,12 @@
+{application, pichub,
+ [{description, "PicHub"},
+  {vsn, "0.0.1"},
+  {registered, [pichub_app]},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  cowboy
+                 ]},
+  {mod, { pichub, []}},
+  {env, []}
+ ]}.
