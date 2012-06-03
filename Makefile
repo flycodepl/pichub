@@ -9,3 +9,6 @@ fast:
 
 clean:
 	@rebar clean
+
+clean_database:
+	@rm -rf database
