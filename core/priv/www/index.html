@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>PicHub</title>
+    <script src="lib/mootools-core.js" type="text/javascript"></script>
+    <script src="lib/mooml.js" type="text/javascript"></script>
+    <script src="lib/mooml-globalize.js" type="text/javascript"></script>
+    <link href="style/default.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+      
+      function init() {
+      $('left_panel').set('morph');
+      $('left_panel').addEvents({
+      mouseenter: function() {
+      this.morph({'left': 0})
+      },
+
+      mouseleave: function() {
+      this.morph({'left': -160})
+      }
+      });
+
+      }
+    </script>
+
+  </head>
+  <body onload="init()">
+    <div id="background">
+      <img src="img/bg.png" class="background_img" />
+    </div>
+    
+    <div class="left_panel" id="left_panel">
+      <div class="panel_item">Kwejk<div class="icon obj_kwejk"></div></div>
+      <div class="panel_item">Piekielni<div class="icon obj_piekielni"></div></div>
+    </div>
+    
+  </body>
+</html>

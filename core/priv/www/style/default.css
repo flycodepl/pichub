@@ -1,0 +1,70 @@
+@font-face {
+    font-family: 'Droid Sans';
+    src: url('fonts/DroidSans.ttf');
+
+}
+
+body, div {
+    color: #FFF;
+    font-family: 'Droid Sans';
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    background-color: #262b31;
+}
+
+#background {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    position: absolute;
+    z-index: -1;
+}
+
+.background_img {
+    width: 100%;
+    height: 100%;
+}
+
+.left_panel {
+    background-color: #222126;
+    border-right: 1px solid #565758;
+    width: 200px;
+    height: 100%;
+    position: absolute;
+    left: -160px;
+}
+
+.panel_item {
+    font-size: 13px;
+    text-align: right;
+    margin-right: 5px;
+    padding-top: 4px;
+
+    width: 100%;
+    height: 32px;
+    border-top: 1px solid #565758;
+    display: inline-block;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    background-repeat: no-repeat;
+    display: inline-block;
+    margin-left: 15px;
+    margin-right: 5px;
+}
+
+.obj_kwejk {
+    background-image: url('../img/obj/kwejk.png');
+}
+
+.obj_piekielni {
+    background-image: url('../img/obj/piekielni.png');
+}

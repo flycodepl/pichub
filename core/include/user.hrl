@@ -1,7 +1,11 @@
 -record(user, 
         {uid,
          username,
-         password}).
+         password,
+         %% after login
+         ip,
+         token
+        }).
 
 -record(user_info, 
         {uid,

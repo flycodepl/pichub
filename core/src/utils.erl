@@ -71,3 +71,9 @@ get_data_from_site(Site) ->
             ?DEBUG("Get site (~s) failed:~n Error msg: ~p", [Site, Desc]),
             {error, Desc}                
     end.
+
+get_priv_path(App) ->
+    AppFile = App++".app",
+    FilePath = code:where_is_file(AppFile),
+    FilePath2 = filename:dirname(filename:absname(FilePath)),
+    filename:join([FilePath2, "..", "priv"]).

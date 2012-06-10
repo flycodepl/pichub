@@ -15,6 +15,7 @@
          stop/1]).
 
 start() ->
+    ?DEBUG("START COWBOY", []),
     application:start(cowboy),
     application:start(pichub).
 
@@ -26,7 +27,8 @@ stop(_Pid) ->
 start(_T, _A) ->
     Dispatch = [
                 {'_', [
-                       {[<<"get">>, '...'], slave_handler, []},
+                       %% {[<<"user">>, '...'], user_handler, []},
+                       %% {[<<"get">>, '...'], slave_handler, []},
                        {'_', default_handler, []}
                       ]}
                ],
