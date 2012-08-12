@@ -17,18 +17,22 @@
 start() ->
     ?DEBUG("START COWBOY", []),
     application:start(cowboy),
+    application:start(crypto),
     application:start(pichub).
 
 
 stop(_Pid) ->
     application:stop(cowboy),
+    application:stop(crypto),
     application:stop(pichub).
 
 start(_T, _A) ->
     Dispatch = [
                 {'_', [
-                       %% {[<<"user">>, '...'], user_handler, []},
-                       %% {[<<"get">>, '...'], slave_handler, []},
+                       {[<<"user">>, '...'], user_handler, []},
+                       {[<<"unread">>], slave_handler, []},
+                       {[<<"read">>, '_', '_'], slave_handler, []},
+
                        {'_', default_handler, []}
                       ]}
                ],

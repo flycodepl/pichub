@@ -24,9 +24,7 @@ handle(Req, State) ->
         {ok, Data} ->
             ContentType = get_content_type(File),
             {ok, Req1} = cowboy_http_req:reply(200, [{<<"Content-Type">>, ContentType},
-                                                     {<<"Cache-Control">>, <<"max-age=0, private">>},
-                                                     {<<"Date">>, <<"Sun, 03 Jun 2012 16:31:11 GMT">>},
-                                                     {<<"Expires">>, <<"Sun, 03 Jun 2012 16:31:10 GMT">>}],
+                                                     {<<"Cache-Control">>, <<"max-age=0, private">>}],
                                                Data, Req),
             {ok, Req1, State};
         {error, Reason} ->

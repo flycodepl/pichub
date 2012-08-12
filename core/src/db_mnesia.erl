@@ -14,11 +14,14 @@
 -export([create_table/1,
          add_record/1,
          add_records/1,
-         get_record/2]).
+         get_record/2,
+         get_match_object/1,
+         transaction/1]).
 
 -export([get_next/1,
          get_next/2,
-         user_exist/1]).
+         user_exist/1,
+         get_user/1]).
 
 -include("config.hrl").
 -include("user.hrl").
@@ -36,12 +39,13 @@ init() ->
 
     init_other(),
     init_user(),
-    init_obj(?OBJ).
+    test_data().
+    %% init_obj(?OBJ).
 
 init_user() ->
     create_table(user),
     create_table(user_info), 
-    create_table(user_unread, bag),
+    create_table(user_unread, ordered_set),
     add_record(#id_seq{thing = user}).
     
 init_obj(ObjList) ->
@@ -51,6 +55,8 @@ init_obj(ObjList) ->
 init_other() ->
     create_table(id_seq).
 
+test_data() ->
+    user:register(<<"convict">>, <<"qwerty">>).
 
 create_table(Name) ->
     create_table(Name, set).
@@ -85,6 +91,14 @@ get_record(From, Id) ->
             {ok, R}
     end.
 
+get_match_object(Object) ->
+    case mnesia:transaction(fun() -> mnesia:match_object(Object) end) of
+        {atomic, R} ->
+            {ok, R};
+        {aborted, Reason} ->
+            {error, Reason}
+    end.
+
 get_next(Thing) ->
     get_next(Thing, 1).
 get_next(Thing, Increment) ->
@@ -93,6 +107,14 @@ get_next(Thing, Increment) ->
                             mnesia:dirty_update_counter(id_seq, Thing, Increment)
                     end),
     I.
+
+transaction(Fun) ->
+    case mnesia:transaction(Fun) of
+        {atomic, R} ->
+            {ok, R};
+        {aborted, Reason} ->
+            {error, Reason}
+    end.
 
 
 %% OTHER
@@ -108,6 +130,6 @@ user_exist(Username) ->
         {atomic, []} -> false
     end.
 
-
-            
-    
+get_user(Username) ->
+    Obj = #user{username = Username, _='_'},
+    get_match_object(Obj).
