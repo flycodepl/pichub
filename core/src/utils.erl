@@ -218,3 +218,10 @@ optconvert(V, T) ->
 %%     AccValue2 = [D] ++ AccValue,
 %%     AccOpts2 = O ++ AccOpts,
 %%     concat_cookies(R, AccValue2, AccOpts2).
+
+parse_url([<<"unread">>]) ->
+    unread;
+parse_url([<<"unread">>, CId]) ->
+    {unread, utils:convert(CId, int)};
+parse_url([<<"read">>, CId, OId]) ->
+    {read, utils:convert(CId, int), utils:convert(OId, int)}.

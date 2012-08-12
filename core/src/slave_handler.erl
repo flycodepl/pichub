@@ -13,49 +13,45 @@ handle(Req, State) ->
     H = [{<<"Content-Type">>, <<"application/json">>},
          {<<"Cache-Control">>, <<"max-age=0, private">>}
         ],
-
-    {Method, Req2} = cowboy_http_req:method(Req),
-    {Url, Req3} = cowboy_http_req:path(Req2),
-    {IfLog, UId, Token, Req4} = user:check_token_from_req(Req3),
-    CheckUser = {IfLog, UId, Token},
-    {Req5, Code, Response0} = do(Method, Url, CheckUser, Req4),
-    Response = case Response0 of
-                   none -> [];
-                   X -> jsx:to_json(X)
-               end,
-    {ok, Req6} = cowboy_http_req:reply(Code, H, Response, Req5),
-    {ok, Req6, State}.
+    case user:check_token_from_req(Req) of
+        {false, _,_, Req2} -> %% IF NOT LOGIN
+            {ok, Req3} = cowboy_http_req:reply(403, [], [], Req2),
+            {ok, Req3, State};
+        {true, UId, _Token, Req2} -> %% IF LOGIN
+            {Method, Req3} = cowboy_http_req:method(Req2),
+            {Url0, Req4} = cowboy_http_req:path(Req3),
+            Url = utils:parse_url(Url0),
+            case do(Method, Url, UId, Req4) of
+                {Req5, Code, none} ->
+                    {ok, Req6} = cowboy_http_req:reply(Code, H, [], Req5);
+                {Req5, Code, Response0} ->
+                    Response = jsx:to_json(Response0),
+                    {ok, Req6} = cowboy_http_req:reply(Code, H, Response, Req5)
+            end,
+            {ok, Req6, State}
+    end.
 
 terminate(_Req, _State) ->
     ok.
 
-%% NOT LOGIN
-do(_Method, _Type, {false, _,_}, Req) ->
-    Response = [{<<"error">>, <<"forbidden">>}],
-    {Req, 403, Response};
-
 %% GET ALL UNREAD
-do('GET', [<<"unread">>], {true, UId, _Token}, Req) ->
-    case db_mnesia:get_match_object(#user_unread{key = {UId, '_'},
-                                                 _ = '_'}) of
-        {ok, []} ->
-            {Req, 304, none};
-        {ok, Records} ->
-            Response = unread_to_term(Records),
-            {Req, 200, Response}
+do('GET', unread, UId, Req) ->
+    case slave:get_unread(UId) of
+        none -> {Req, 304, none};
+        Res  -> {Req, 200, Res}
+    end;
+
+%% GET UNREAD FROM CHANNEL
+do('GET', {unread, CId}, UId, Req) ->
+    case slave:get_unread(UId, CId) of
+        none -> {Req, 304, none};
+        Res  -> {Req, 200, Res}
     end;
 
 %% SET AS READ
-do('GET', [<<"read">>, CId, OId], {true, UId, _Token}, Req) ->
-
-    case db_mnesia:get_match_object(#user_unread{key = {UId, '_'},
-                                                 cid = CId}) of
-        {ok, []} ->
-            {Req, 304, none};
-        {ok, Records} ->
-            Response = unread_to_term(Records),
-            {Req, 200, Response}
-    end;
+do('GET', {read, CId, OId}, UId, Req) ->
+    ok = slave:set_as_read(UId, CId, OId),
+    {Req, 200, none};
 
 do(_Method, _Type, _CheckUser, Req) ->
     io:fwrite("CHECK: ~p~n~n", [_CheckUser]),
@@ -65,5 +61,3 @@ do(_Method, _Type, _CheckUser, Req) ->
                 {<<"request">>, Url}],
     {Req, 404, Response}.
 
-unread_to_term(Records) ->
-    [ {utils:convert(CId, bin), OId} || #user_unread{cid=CId, oid=OId} <- Records ].

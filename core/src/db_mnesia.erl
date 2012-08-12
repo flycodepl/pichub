@@ -16,6 +16,9 @@
          add_records/1,
          get_record/2,
          get_match_object/1,
+         delete_record/2,
+         delete_object/1,
+         delete_objects/1,
          transaction/1]).
 
 -export([get_next/1,
@@ -102,11 +105,30 @@ get_match_object(Object) ->
 get_next(Thing) ->
     get_next(Thing, 1).
 get_next(Thing, Increment) ->
-    {atomic, I} = mnesia:sync_transaction(
-                    fun() ->
-                            mnesia:dirty_update_counter(id_seq, Thing, Increment)
-                    end),
+    Fun = fun() ->
+                  mnesia:dirty_update_counter(id_seq, Thing, Increment)
+          end,
+    {atomic, I} = mnesia:sync_transaction(Fun),
     I.
+
+delete_record(From, Id) ->
+    case mnesia:transaction(fun() -> mnesia:delete(From, Id, write) end) of
+        {error,  _}  -> {error, not_found};
+        {atomic, ok} -> ok
+    end.
+
+delete_object(Object) ->
+    case mnesia:transaction(fun() -> mnesia:delete_object(Object) end) of
+        {atomic,  ok}     -> ok;
+        {aborted, Reason} -> {error, Reason}
+    end.
+
+delete_objects(Objects) ->
+    case mnesia:transaction(fun() -> [delete_object(O) || O <- Objects] end) of
+        {atomic,  _}      -> ok;
+        {aborted, Reason} -> {error, Reason}
+    end.
+
 
 transaction(Fun) ->
     case mnesia:transaction(Fun) of
